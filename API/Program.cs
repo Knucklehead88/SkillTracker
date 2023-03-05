@@ -53,6 +53,8 @@ builder.Services.AddSwaggerGen(c =>
                 });
 });
 
+builder.Services.AddDbContext<CosmosContext>();
+
 builder.Services.AddDbContext<StoreContext>(options =>
 {
     var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");

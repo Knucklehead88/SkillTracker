@@ -7,7 +7,6 @@ import Review from "./Review";
 import {yupResolver} from '@hookform/resolvers/yup';
 import { validationSchema } from "./checkoutValidation";
 import agent from "../../app/api/agent";
-import { clearBasket } from "../basket/basketSlice";
 import { LoadingButton } from "@mui/lab";
 import { useAppDispatch } from "../../app/store/configureStore";
 
@@ -56,7 +55,6 @@ export default function CheckoutPage() {
                 const orderNumber = await agent.Orders.create({saveAddress, shippingAddress});
                 setOrderNumber(orderNumber);
                 setActiveStep(activeStep + 1);
-                dispatch(clearBasket());
                 setLoading(false);
             } catch (error) {
                 console.log(error);

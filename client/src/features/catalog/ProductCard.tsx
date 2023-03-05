@@ -4,14 +4,12 @@ import { Link } from "react-router-dom";
 import { Product } from "../../app/models/product";
 import { useAppDispatch, useAppSelector } from "../../app/store/configureStore";
 import { currencyFormat } from "../../app/util/util";
-import { addBasketItemAsync } from "../basket/basketSlice";
 
 interface Props {
     product: Product
 }
 
 export default function ProductCard({ product }: Props) {
-    const {status} = useAppSelector(state => state.basket);
     const dispatch = useAppDispatch();
 
     return (
@@ -41,12 +39,6 @@ export default function ProductCard({ product }: Props) {
                 </Typography>
             </CardContent>
             <CardActions>
-                <LoadingButton
-                    loading={status.includes('pendingAddItem' + product.id)}
-                    onClick={() => dispatch(addBasketItemAsync({productId: product.id}))}
-                    size="small">
-                    Add to cart
-                </LoadingButton>
                 <Button component={Link} to={`/catalog/${product.id}`} size="small">View</Button>
             </CardActions>
         </Card>

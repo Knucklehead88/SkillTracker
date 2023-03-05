@@ -33,9 +33,7 @@ const navStyles = {
 }
 
 export default function Header({ darkMode, handleThemeChange }: Props) {
-    const { basket } = useAppSelector(state => state.basket);
     const { user } = useAppSelector(state => state.account);    
-    const itemCount = basket?.items.reduce((sum, item) => sum + item.quantity, 0)
 
     return (
         <AppBar position='static' sx={{ mb: 4 }}>
@@ -43,7 +41,7 @@ export default function Header({ darkMode, handleThemeChange }: Props) {
                 <Box display='flex' alignItems='center'>
                     <Typography variant='h6' component={NavLink} exact to='/'
                         sx={navStyles}>
-                        Kitchen Deal
+                        SkillTracker
                     </Typography>
                     <Switch checked={darkMode} onChange={handleThemeChange} />
                 </Box>
@@ -60,11 +58,6 @@ export default function Header({ darkMode, handleThemeChange }: Props) {
                     ))}
                 </List>
                 <Box display='flex' alignItems='center'>
-                    <IconButton component={Link} to='/basket' size='large' sx={{ color: 'inherit' }}>
-                        <Badge badgeContent={itemCount} color='secondary'>
-                            <ShoppingCart />
-                        </Badge>
-                    </IconButton>
                     {user ? (
                         <SignedInMenu />
                     ) : (

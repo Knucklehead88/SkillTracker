@@ -1,4 +1,3 @@
-import { Switch } from "@mui/material";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { resolve } from "path";
 import { toast } from "react-toastify";
@@ -104,12 +103,16 @@ const Orders = {
     create: (values: any) => requests.post('orders', values)
 }
 
+const File = {
+    upload: (files: any) => requests.post('file/upload', files)
+}
+
 const agent = {
     Products,
     TestErrors,
-    Basket,
     Account,
-    Orders
+    Orders,
+    File
 }
 
 export default agent; 
