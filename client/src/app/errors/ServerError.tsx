@@ -15,7 +15,7 @@ export default function ServerError(){
             ): (
                 <Typography variant="h5" gutterBottom>Server error</Typography>
             )}
-            <Button onClick={()=> history.push('/home')}>Go back to store</Button>
+            <Button onClick={()=> history.push('/home')}>Go back to HomePage</Button>
         </Container>
     )
 }

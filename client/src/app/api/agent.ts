@@ -1,11 +1,12 @@
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { resolve } from "path";
 import { toast } from "react-toastify";
+import { AnyAction } from "redux";
 import { history } from "../..";
 import { PaginatedResponse } from "../models/pagination";
 import { store } from "../store/configureStore";
 
-const sleep = () => new Promise(resolve => setTimeout(resolve, 500));
+// const sleep = () => new Promise(resolve => setTimeout(resolve, 500));
 
 axios.defaults.baseURL = 'http://localhost:5000/api/';
 axios.defaults.withCredentials = true;
@@ -21,7 +22,7 @@ axios.interceptors.request.use(config => {
 
 
 axios.interceptors.response.use(async response => {
-    await sleep();
+    // await sleep();
     const pagination = response.headers['pagination'];
     if (pagination) {
         response.data = new PaginatedResponse(response.data, JSON.parse(pagination));
@@ -61,19 +62,16 @@ axios.interceptors.response.use(async response => {
 });
 
 const requests = {
-    //get: (url: string) => axios.get(url).then(responseBody),
     get: (url: string, params?: URLSearchParams) => axios.get(url, {params}).then(responseBody),
     post: (url: string, body: {}) => axios.post(url,body).then(responseBody),
     put: (url: string, body: {}) => axios.put(url, body).then(responseBody),
     delete: (url: string) => axios.delete(url).then(responseBody),
 }
 
-const Products = {
-    // list: () => requests.get('products'),
-    // details: (id: number) => requests.get(`products/${id}`)
-    list: (params: URLSearchParams) => requests.get('products', params),
-    details: (id: number) => requests.get(`products/${id}`),
-    fetchFilters: () => requests.get('products/filters')
+const Employees = {
+    list: (params: URLSearchParams) => requests.get('employee', params),
+    details: (id: number) => requests.get(`employee/${id}`),
+    fetchFilters: () => requests.get('employee/filters')
 }
 
 const TestErrors = {
@@ -97,22 +95,26 @@ const Account = {
     fetchAddress: () => requests.get('account/savedAddress')
 }
 
-const Orders = {
-    list: () => requests.get('orders'),
-    fetch: (id: number) => requests.get(`orders/${id}`),
-    create: (values: any) => requests.post('orders', values)
-}
-
 const File = {
     upload: (files: any) => requests.post('file/upload', files)
 }
 
+const Question = {
+    list: () => requests.get('question'),
+    listByCategory: (category: string) => requests.get(`question/${category}`),
+    fetch: (id: string) => requests.get(`question/${id}`),
+    categories: () => requests.get('question/categories'),
+    create: (values: any) => requests.post('question', values),
+    remove: (id: string) => requests.delete(`question?id=${id}`),
+}
+
 const agent = {
-    Products,
+    Employees,
     TestErrors,
+    Basket,
     Account,
-    Orders,
-    File
+    File,
+    Question
 }
 
 export default agent; 

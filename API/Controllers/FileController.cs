@@ -6,6 +6,7 @@ using API.Data;
 using API.DTOs;
 using API.Entities;
 using API.Extensions;
+using API.RequestHelpers.Services;
 using API.Services;
 using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
@@ -20,15 +21,13 @@ namespace API.Controllers
 {
     public class FileController : BaseApiController
     {
-        private readonly UserManager<User> _userManager;
-        private readonly StoreContext _context;
-        private readonly CosmosContext _cosmosContext;
+        private readonly ICosmosDbService _cosmosDbService;
 
-        public FileController(UserManager<User> userManager, StoreContext context, CosmosContext cosmosContext)
+
+        public FileController(ICosmosDbService cosmosDbService)
         {
-            _context = context;
-            _cosmosContext = cosmosContext;
-            _userManager = userManager;
+            _cosmosDbService = cosmosDbService ?? throw new ArgumentNullException(nameof(cosmosDbService));
+
         }
 
         //[HttpPost("upload")]
@@ -53,39 +52,39 @@ namespace API.Controllers
         // Don't rely on or trust the FileName property without validation.
 
         //return Ok(new { count = files.Count, size });
-    
-
-    [HttpPost("upload")]
-    public async Task<ActionResult<UploadDto>> OnPostUpload(List<IFormFile> files)
-    {
-        try
-            {
-                if(files == null)
-                    throw new Exception("File is Not Received...");
-
-                var questions = new List<QuestionManager>();
-
-                GetAllQuestions(files, questions);
-                //GetAllQuestionsFromExcel(files, questions);
 
 
-                await _cosmosContext.Questions?.AddRangeAsync(questions);
-
-
-                return new UploadDto
-                {
-                    Status = true,
-                    Message = "Data Updated Successfully",
-                    StatusCode = System.Net.HttpStatusCode.OK.ToString()
-                };
-            }
-            catch (Exception e)
+        [HttpPost("upload")]
+        public async Task<ActionResult<UploadDto>> OnPostUpload(List<IFormFile> files)
         {
-            throw e;
-        }
-    }
+            try
+                {
+                    if(files == null)
+                        throw new Exception("File is Not Received...");
 
-        private void GetAllQuestionsFromExcel(List<IFormFile> files, List<QuestionManager> questions)
+                    var questions = new List<Question>();
+
+                    await GetAllQuestions(files, questions);
+                    //GetAllQuestionsFromExcel(files, questions);
+
+
+                    //await _cosmosContext.Questions?.AddRangeAsync(questions);
+
+
+                    return new UploadDto
+                    {
+                        Status = true,
+                        Message = "Data Updated Successfully",
+                        StatusCode = System.Net.HttpStatusCode.OK.ToString()
+                    };
+                }
+                catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        private void GetAllQuestionsFromExcel(List<IFormFile> files, List<Question> questions)
         {
             if (files == null)
                 return;
@@ -111,14 +110,10 @@ namespace API.Controllers
                         for (int column = 0; column < reader.FieldCount; column++)
                         {
                             Console.WriteLine(reader.GetValue(column));
-                            var question = new QuestionManager
+                            var question = new Question
                             {
                                 Id = Guid.NewGuid().ToString(),
-                                Question = reader.GetValue(0).ToString(),
-                                AnswerA = reader.GetValue(1).ToString(),
-                                AnswerB = reader.GetValue(2).ToString(),
-                                AnswerC = reader.GetValue(3).ToString(),
-                                AnswerD = reader.GetValue(4).ToString(),
+                                QuestionText = reader.GetValue(0).ToString(),
                                 CorrectAnswer = reader.GetValue(5).ToString(),
                                 //Category = reader.HeaderFooter.Worksheet?.ToString()
                             };
@@ -130,14 +125,13 @@ namespace API.Controllers
             }
         }
 
-        private static void GetAllQuestions(List<IFormFile> files, List<QuestionManager> questions)
+        private async Task GetAllQuestions(List<IFormFile> files, List<Question> questions)
         {
             foreach (var file in files)
             {
                 var fileextension = Path.GetExtension(file.FileName);
                 var filename = Guid.NewGuid().ToString() + fileextension;
                 var filepath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "files", filename);
-                //var filepath = Path.GetTempFileName();
                 using (FileStream fs = System.IO.File.Create(filepath))
                 {
                     file.CopyTo(fs);
@@ -148,28 +142,32 @@ namespace API.Controllers
 
                 foreach (var sheet in workbook.Worksheets)
                 {
-                    foreach (var row in sheet.Rows().ToList())
+                    foreach (var row in sheet.Rows(2, sheet.Rows().Count()-1).ToList())
                     {
                         var test = row.Cell(1).Value.ToString();
                         if (string.IsNullOrWhiteSpace(test) || string.IsNullOrEmpty(test))
                         {
                             break;
                         }
-                        var question = new QuestionManager
+                        var question = new Question
                         {
                             Id = Guid.NewGuid().ToString(),
-                            Question = row.Cell(1).Value.ToString(),
-                            AnswerA = row.Cell(2).Value.ToString(),
-                            AnswerB = row.Cell(2).Value.ToString(),
-                            AnswerC = row.Cell(3).Value.ToString(),
-                            AnswerD = row.Cell(4).Value.ToString(),
-                            CorrectAnswer = row.Cell(5).Value.ToString(),
+                            QuestionText = row.Cell(1).Value.ToString(),
+                            Options = new List<string>{
+                                row.Cell(2).Value.ToString(),
+                                row.Cell(3).Value.ToString(),
+                                row.Cell(4).Value.ToString(),
+                                row.Cell(5).Value.ToString()
+                            },
+                            CorrectAnswer = row.Cell(6).Value.ToString(),
                             Category = row.Worksheet?.ToString()
                         };
 
                         if (question.IsValid())
                         {
                             questions.Add(question);
+                            await _cosmosDbService.AddQuestionAsync(question);
+
                         }
                     }
                 }

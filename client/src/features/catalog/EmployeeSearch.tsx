@@ -1,20 +1,20 @@
 import { debounce, TextField } from "@mui/material";
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/store/configureStore";
-import { setProductParams } from "./catalogSlice";
+import { setEmployeeParams } from "./catalogSlice";
 
-export default function ProductSearch() {
-    const {productParams} = useAppSelector(state => state.catalog);
-    const [searchTerm, setSearchTerm] = useState(productParams.searchTerm);
+export default function EmployeeSearch() {
+    const {employeeParams} = useAppSelector(state => state.catalog);
+    const [searchTerm, setSearchTerm] = useState(employeeParams.searchTerm);
     const dispatch = useAppDispatch();
 
     const debouncedSearch = debounce((event: any) => {
-        dispatch(setProductParams({searchTerm: event.target.value}))
+        dispatch(setEmployeeParams({searchTerm: event.target.value}))
     }, 1000)
 
     return (
         <TextField
-            label='Search products'
+            label='Search employees'
             variant='outlined'
             fullWidth
             value={searchTerm || ''}

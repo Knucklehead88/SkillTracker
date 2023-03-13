@@ -1,14 +1,23 @@
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Newtonsoft.Json;
+
 namespace API.Entities
 {
-    public class QuestionManager
+    public class Question
     {
+        [JsonProperty(PropertyName = "id")]
         public string Id { get; set; }
-        public string Question { get; set; }
-        public string AnswerA { get; set; }
-        public string AnswerB { get; set; }
-        public string AnswerC { get; set; }
-        public string AnswerD { get; set; }
+
+        [JsonProperty(PropertyName = "questiontext")]       
+        public string QuestionText { get; set; }
+
+        [JsonProperty(PropertyName = "options")]
+        public List<string> Options { get; set; } = new List<string>();
+
+        [JsonProperty(PropertyName = "correctanswer")]
         public string CorrectAnswer { get; set; }
+        
+        [JsonProperty(PropertyName = "category")]
         public string Category { get; set; }
              
     }

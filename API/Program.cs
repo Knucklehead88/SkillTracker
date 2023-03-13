@@ -2,7 +2,9 @@ using API.Data;
 using API.Entities;
 using API.Middleware;
 using API.RequestHelpers;
+using API.RequestHelpers.Services;
 using API.Services;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -116,7 +118,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<TokenService>();
-builder.Services.AddScoped<PaymentService>();
 builder.Services.AddScoped<ImageService>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration);
@@ -125,6 +126,8 @@ builder.Services.ConfigureApplicationCookie(o => {
     o.ExpireTimeSpan = TimeSpan.FromDays(5);
     o.SlidingExpiration = true;
 });
+
+builder.Services.AddSingleton<ICosmosDbService>(InitializeCosmosClientInstanceAsync(builder.Configuration.GetSection("CosmosDb")).GetAwaiter().GetResult());
 
 var app = builder.Build();
 app.UseMiddleware<ExceptionMiddleware>();
@@ -168,4 +171,17 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapFallbackToController("Index", "Fallback");
 
-await app.RunAsync();
+static async Task<CosmosDbService> InitializeCosmosClientInstanceAsync(IConfigurationSection configurationSection)
+{
+    var databaseName = configurationSection["DatabaseName"];
+    var containerName = configurationSection["ContainerName"];
+    var account = configurationSection["Account"];
+    var key = configurationSection["Key"];
+    var client = new Microsoft.Azure.Cosmos.CosmosClient(account, key);
+    var database = await client.CreateDatabaseIfNotExistsAsync(databaseName);
+    await database.Database.CreateContainerIfNotExistsAsync(containerName, "/id");
+    var cosmosDbService = new CosmosDbService(client, databaseName, containerName);
+    return cosmosDbService;
+}
+
+app.Run();

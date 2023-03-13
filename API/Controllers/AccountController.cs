@@ -40,29 +40,29 @@ namespace API.Controllers
 
             if(!user.EmailConfirmed) {}
 
-            var userBasket = await RetrieveBasket(loginDto.Username);
-            var anonBasket = await RetrieveBasket(Request.Cookies["buyerId"]);
+            //var userBasket = await RetrieveBasket(loginDto.Username);
+            //var anonBasket = await RetrieveBasket(Request.Cookies["buyerId"]);
 
-            if (anonBasket != null)
-            {
-                if (userBasket != null) _context.Baskets.Remove(userBasket);
-                anonBasket.BuyerId = user?.UserName;
-                Response.Cookies.Delete("buyerId");
-                await _context.SaveChangesAsync();
-            }
+            //if (anonBasket != null)
+            //{
+            //    //if (userBasket != null) _context.Baskets.Remove(userBasket);
+            //    anonBasket.BuyerId = user?.UserName;
+            //    Response.Cookies.Delete("buyerId");
+            //    await _context.SaveChangesAsync();
+            //}
 
             return new UserDto
             {
                 Email = user.Email,
-                Token = await _tokenService.GenerateToken(user),
-                Basket = anonBasket != null ? anonBasket.MapBasketToDto() : userBasket?.MapBasketToDto()
+                Token = await _tokenService.GenerateToken(user)
+                //Basket = anonBasket != null ? anonBasket.MapBasketToDto() : userBasket?.MapBasketToDto()
             };
         }
 
         [HttpPost("register")]
         public async Task<ActionResult> Register(RegisterDto registerDto)
         {
-            var user = new User { UserName = registerDto.Username, Email = registerDto.Email };
+            var user = new User { UserName = registerDto.Username, Email = registerDto.Email, Job= "N\\A", Skill="N\\A" };
 
             var result = await _userManager.CreateAsync(user, registerDto.Password);
 
@@ -80,9 +80,9 @@ namespace API.Controllers
 
             var returnUrl = Url.Content("~/");
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var confirmationLink = Url.Action(nameof(ConfirmEmail), "Account", new { token, email = user.Email }, Request.Scheme);
+            //var confirmationLink = Url.Action(nameof(ConfirmEmail), "Account", new { token, email = user.Email }, Request.Scheme);
 
-            await _emailSender.SendEmailAsync(user.Email, "Confirmation email link", confirmationLink);
+            //await _emailSender.SendEmailAsync(user.Email, "Confirmation email link", confirmationLink);
 
             return StatusCode(201);
         }
@@ -103,13 +103,13 @@ namespace API.Controllers
         {
             var user = await _userManager.FindByNameAsync(User.Identity.Name);
 
-            var userBasket = await RetrieveBasket(User.Identity.Name);
+            //var userBasket = await RetrieveBasket(User.Identity.Name);
 
             return new UserDto
             {
                 Email = user.Email,
-                Token = await _tokenService.GenerateToken(user),
-                Basket = userBasket?.MapBasketToDto()
+                Token = await _tokenService.GenerateToken(user)
+                //Basket = userBasket?.MapBasketToDto()
             };
         }
 
@@ -123,18 +123,18 @@ namespace API.Controllers
                 .FirstOrDefaultAsync();
         }
 
-        private async Task<Basket> RetrieveBasket(string buyerId)
-        {
-            if (string.IsNullOrEmpty(buyerId))
-            {
-                Response.Cookies.Delete("buyerId");
-                return null;
-            }
+        //private async Task<Basket> RetrieveBasket(string buyerId)
+        //{
+        //    if (string.IsNullOrEmpty(buyerId))
+        //    {
+        //        Response.Cookies.Delete("buyerId");
+        //        return null;
+        //    }
 
-            return await _context.Baskets
-                .Include(i => i.Items)
-                .ThenInclude(p => p.Product)
-                .FirstOrDefaultAsync(x => x.BuyerId == buyerId);
-        }
+            //return await _context.Baskets
+            //    .Include(i => i.Items)
+            //    .ThenInclude(p => p.Product)
+            //    .FirstOrDefaultAsync(x => x.BuyerId == buyerId);
+        //}
     }
 }

@@ -1,38 +1,39 @@
 import { createAsyncThunk, createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import agent from "../../app/api/agent";
+import { Employee, EmployeeParams } from "../../app/models/employee";
 import { MetaData } from "../../app/models/pagination";
-import { Product, ProductParams } from "../../app/models/product";
 import { RootState } from "../../app/store/configureStore";
 
 interface CatalogState {
-    productsLoaded: boolean;
+    employeesLoaded: boolean;
     filtersLoaded: boolean;
     status: string;
-    brands: string[];
-    types: string[];
-    productParams: ProductParams;
+    skills: string[];
+    jobs: string[];
+    employeeParams: EmployeeParams;
     metaData: MetaData | null;
 }
 
-const productsAdapter = createEntityAdapter<Product>();
+const employeesAdapter = createEntityAdapter<Employee>();
 
-function getAxiosParams(productParams: ProductParams) {
+
+function getAxiosParams(employeeParams: EmployeeParams) {
     const params = new URLSearchParams();
-    params.append('pageNumber', productParams.pageNumber.toString());
-    params.append('pageSize', productParams.pageSize.toString());
-    params.append('orderBy', productParams.orderBy);
-    if (productParams.searchTerm) params.append('searchTerm', productParams.searchTerm);
-    if (productParams.brands.length > 0) params.append('brands', productParams.brands.toString());
-    if (productParams.types.length > 0) params.append('types', productParams.types.toString());
+    params.append('pageNumber', employeeParams.pageNumber.toString());
+    params.append('pageSize', employeeParams.pageSize.toString());
+    params.append('orderBy', employeeParams.orderBy);
+    if (employeeParams.searchTerm) params.append('searchTerm', employeeParams.searchTerm);
+    if (employeeParams.skills.length > 0) params.append('skills', employeeParams.skills.toString());
+    if (employeeParams.jobs.length > 0) params.append('jobs', employeeParams.jobs.toString());
     return params;
 }
 
-export const fetchProductsAsync = createAsyncThunk<Product[], void, {state: RootState}>(    
-    'products/fetchProductsAsync',
+export const fetchEmployeesAsync = createAsyncThunk<Employee[], void, {state: RootState}>(    
+    'employees/fetchEmployeesAsync',
     async (_, thunkAPI) => {
-        const params = getAxiosParams(thunkAPI.getState().catalog.productParams);
+        const params = getAxiosParams(thunkAPI.getState().catalog.employeeParams);
         try {
-            const response = await agent.Products.list(params);
+            const response = await agent.Employees.list(params);
             thunkAPI.dispatch(setMetaData(response.metaData));
             return response.items;
         } catch (error: any) {
@@ -41,11 +42,11 @@ export const fetchProductsAsync = createAsyncThunk<Product[], void, {state: Root
     }
 )
 
-export const fetchProductAsync = createAsyncThunk<Product, number>(
-    'products/fetchProductAsync',
-    async (productId, thunkAPI) => {
+export const fetchEmployeeAsync = createAsyncThunk<Employee, number>(
+    'employees/fetchEmployeeAsync',
+    async (employeeId, thunkAPI) => {
         try {
-            return await agent.Products.details(productId);
+            return await agent.Employees.details(employeeId);
         } catch (error: any) {
             return thunkAPI.rejectWithValue({error: error.data})
         }
@@ -56,7 +57,7 @@ export const fetchFilters = createAsyncThunk(
     'catalog/fetchFilters',
     async (_, thunkAPI) => {
         try {
-            return agent.Products.fetchFilters();
+            return agent.Employees.fetchFilters();
         } catch (error: any) {
             return thunkAPI.rejectWithValue({error: error.data})
         }
@@ -68,59 +69,59 @@ function initParams() {
         pageNumber: 1,
         pageSize: 6,
         orderBy: 'name',
-        brands: [],
-        types: []
+        skills: [],
+        jobs: []
     }
 }
 
 export const catalogSlice = createSlice({
-    name: 'products',
-    initialState: productsAdapter.getInitialState<CatalogState>({
-        productsLoaded: false,
+    name: 'employees',
+    initialState: employeesAdapter.getInitialState<CatalogState>({
+        employeesLoaded: false,
         filtersLoaded: false,
         status: 'idle',
-        brands: [],
-        types: [],
-        productParams: initParams(),
+        skills: [],
+        jobs: [],
+        employeeParams: initParams(),
         metaData: null
     }),
     reducers: {
-        setProductParams: (state, action) => {
-            state.productsLoaded = false;
-            state.productParams = {...state.productParams, ...action.payload, pageNumber: 1};
+        setEmployeeParams: (state, action) => {
+            state.employeesLoaded = false;
+            state.employeeParams = {...state.employeeParams, ...action.payload, pageNumber: 1};
         },
         setPageNumber: (state, action) => {
-            state.productsLoaded = false;
-            state.productParams = {...state.productParams, ...action.payload};
+            state.employeesLoaded = false;
+            state.employeeParams = {...state.employeeParams, ...action.payload};
         },
         setMetaData: (state, action) => {
             state.metaData = action.payload;
         },
-        resetProductParams: (state) => {
-            state.productParams = initParams();
+        resetEmployeeParams: (state) => {
+            state.employeeParams = initParams();
         }
     },
     extraReducers: (builder => {
-        builder.addCase(fetchProductsAsync.pending, (state) => {
-            state.status = 'pendingFetchProducts';
+        builder.addCase(fetchEmployeesAsync.pending, (state) => {
+            state.status = 'pendingFetchEmployees';
         });
-        builder.addCase(fetchProductsAsync.fulfilled, (state, action) => {
-            productsAdapter.setAll(state, action.payload);
+        builder.addCase(fetchEmployeesAsync.fulfilled, (state, action) => {
+            employeesAdapter.setAll(state, action.payload);
             state.status = 'idle';
-            state.productsLoaded = true;
+            state.employeesLoaded = true;
         });
-        builder.addCase(fetchProductsAsync.rejected, (state, action) => {
+        builder.addCase(fetchEmployeesAsync.rejected, (state, action) => {
             console.log(action.payload);
             state.status = 'idle';
         });
-        builder.addCase(fetchProductAsync.pending, (state) => {
-            state.status = 'pendingFetchProduct';
+        builder.addCase(fetchEmployeeAsync.pending, (state) => {
+            state.status = 'pendingFetchEmployee';
         });
-        builder.addCase(fetchProductAsync.fulfilled, (state, action) => {
-            productsAdapter.upsertOne(state, action.payload);
+        builder.addCase(fetchEmployeeAsync.fulfilled, (state, action) => {
+            employeesAdapter.upsertOne(state, action.payload);
             state.status = 'idle';
         });
-        builder.addCase(fetchProductAsync.rejected, (state, action) => {
+        builder.addCase(fetchEmployeeAsync.rejected, (state, action) => {
             console.log(action);
             state.status = 'idle';
         });
@@ -128,8 +129,8 @@ export const catalogSlice = createSlice({
             state.status = 'pendingFetchFilters';
         });
         builder.addCase(fetchFilters.fulfilled, (state, action) => {
-            state.brands = action.payload.brands;
-            state.types = action.payload.types;
+            state.skills = action.payload.skills;
+            state.jobs = action.payload.jobs;
             state.filtersLoaded = true;
             state.status = 'idle';
         });
@@ -140,6 +141,6 @@ export const catalogSlice = createSlice({
     })
 })
 
-export const productSelectors = productsAdapter.getSelectors((state: RootState) => state.catalog);
+export const employeeSelectors = employeesAdapter.getSelectors((state: RootState) => state.catalog);
 
-export const {setProductParams, resetProductParams, setMetaData, setPageNumber} = catalogSlice.actions;
+export const {setEmployeeParams, resetEmployeeParams, setMetaData, setPageNumber} = catalogSlice.actions;

@@ -5,14 +5,11 @@ namespace API.Extensions
 {
     public static class QuestionExtension
     {
-        public static bool IsValid(this QuestionManager questionManager)
+        public static bool IsValid(this Question question)
         {
-            //return (questionManager.Question.IsNotNullOrEmpty() && questionManager.AnswerA.IsNotNullOrEmpty()
-            //    && questionManager.AnswerB.IsNotNullOrEmpty() && !questionManager.AnswerC.IsNotNullOrEmpty()
-            //    && questionManager.AnswerD.IsNotNullOrEmpty() && questionManager.Category.IsNotNullOrEmpty()
-            //    && questionManager.CorrectAnswer.IsNotNullOrEmpty());
-            return questionManager.GetType().GetProperties()
-                            .All(p => p.GetValue(questionManager) != null);
+            return !string.IsNullOrEmpty(question.QuestionText) &&
+                    question.Options
+                    .All(o => !string.IsNullOrEmpty(o) || !string.IsNullOrWhiteSpace(o));
         }
     }
 }

@@ -1,6 +1,8 @@
 import { Button } from "@mui/material";
 import { useState } from "react";
 import FileUpload from "react-mui-fileuploader";
+import { useHistory } from "react-router-dom";
+import { toast } from "react-toastify";
 import agent from "../../app/api/agent";
 
 interface Props {
@@ -10,6 +12,7 @@ interface Props {
 
 
 export default function HomePage({items, names}: Props) {
+    const history = useHistory();
     const [filesToUpload, setFilesToUpload] = useState(names || []);
   
     const handleFilesChange = (files: any[]) => {
@@ -21,14 +24,18 @@ export default function HomePage({items, names}: Props) {
       // Create a form and post it to server
       let formData = new FormData();
       filesToUpload.forEach((file) => formData.append("files", file));
-      
 
-      // fetch("/file/upload", {
-      //   method: "POST",
-      //   body: formData
-      // });
+        // const uploadDto = agent.File.upload(formData);
+        // if (uploadDto.Status) { 
+        //     toast.success("File successfully uploaded!");
+        // }
 
-      const result = agent.File.upload(formData);
+        await agent.File.upload(formData)
+        .then(() => {
+            toast.success('File was uploaded successfully');
+            history.push('/quiz');
+        })
+        .catch(error => handleApiErrors(error))
     };
     return (
         <>
@@ -42,4 +49,8 @@ export default function HomePage({items, names}: Props) {
         </Button>
       </>
     )
+}
+
+function handleApiErrors(error: any): any {
+  throw new Error("Function not implemented.");
 }

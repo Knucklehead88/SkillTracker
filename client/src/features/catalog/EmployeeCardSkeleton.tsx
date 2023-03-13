@@ -7,7 +7,7 @@ import {
     Skeleton
 } from "@mui/material";
 
-export default function ProductCardSkeleton() {
+export default function EmployeeCardSkeleton() {
     return (
         <Grid item xs component={Card}>
             <CardHeader
