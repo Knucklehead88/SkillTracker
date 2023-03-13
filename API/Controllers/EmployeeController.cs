@@ -69,32 +69,6 @@ namespace API.Controllers
             return Ok(new { skills, jobs });
         }
 
-        //// [Authorize(Roles = "Admin")]
-        //[HttpPost]
-        //public async Task<ActionResult<Product>> CreateProduct([FromForm]CreateProductDto productDto)
-        //{
-        //    var product = _mapper.Map<Product>(productDto);
-
-        //    if (productDto.File != null)
-        //    {
-        //        //var imageResult = await _imageService.AddImageAsync(productDto.File);
-
-        //        //if (imageResult.Error != null) 
-        //        //    return BadRequest(new ProblemDetails{Title = imageResult.Error.Message});
-
-        //        //product.PictureUrl = imageResult.SecureUrl.ToString();
-        //        //product.PublicId = imageResult.PublicId;
-        //    }
-
-        //    _context.Products.Add(product);
-
-        //    var result = await _context.SaveChangesAsync() > 0;
-
-        //    if (result) return CreatedAtRoute("GetProduct", new { Id = product.Id }, product);
-
-        //    return BadRequest(new ProblemDetails { Title = "Problem creating new product" });
-        //}
-
         // [Authorize(Roles = "Admin")]
         [HttpPut]
         public async Task<ActionResult<User>> UpdateEmployee([FromForm]UpdateEmployeeDto employeeDto)
@@ -113,25 +87,5 @@ namespace API.Controllers
 
             return BadRequest(new ProblemDetails { Title = "Problem updating employee" });
         }
-
-        //// [Authorize(Roles = "Admin")]
-        //[HttpDelete("{id}")]
-        //public async Task<ActionResult> DeleteProduct(int id)
-        //{
-        //    var product = await _context.Products.FindAsync(id);
-
-        //    if (product == null) return NotFound();
-
-        //    //if (!string.IsNullOrEmpty(product.PublicId)) 
-        //    //    await _imageService.DeleteImageAsync(product.PublicId);
-
-        //    _context.Products.Remove(product);
-
-        //    var result = await _context.SaveChangesAsync() > 0;
-
-        //    if (result) return Ok();
-
-        //    return BadRequest(new ProblemDetails { Title = "Problem deleting product" });
-        //}
     }
 }

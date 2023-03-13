@@ -8,11 +8,7 @@ namespace API.RequestHelpers
     {
         public MappingProfiles()
         {
-            CreateMap<CreateProductDto, Product>();
-            CreateMap<UpdateProductDto, Product>();
             CreateMap<UpdateEmployeeDto, User>();
-            CreateMap<BasketDto, Basket>().ReverseMap();
-            CreateMap<BasketItemDto, BasketItem>().ReverseMap();
 
         }
     }

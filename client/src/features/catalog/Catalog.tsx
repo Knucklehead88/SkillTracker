@@ -8,11 +8,6 @@ import { fetchFilters, fetchEmployeesAsync, employeeSelectors, setPageNumber, se
 import EmployeeList from "./EmployeeList";
 import EmployeeSearch from "./EmployeeSearch";
 
-const sortOptions = [
-    { value: 'name', label: 'Alphabetical' },
-    { value: 'priceDesc', label: 'Price - High to low' },
-    { value: 'price', label: 'Price - Low to high' },
-]
 
 export default function Catalog() {
     const products = useAppSelector(employeeSelectors.selectAll);

@@ -4,38 +4,38 @@ import FileUpload from "react-mui-fileuploader";
 import { useHistory } from "react-router-dom";
 import { toast } from "react-toastify";
 import agent from "../../app/api/agent";
+import LoadingComponent from "../../app/layout/LoadingComponent";
 
 interface Props {
-  items: string[];
   names: string[];
 }
 
 
-export default function HomePage({items, names}: Props) {
+export default function HomePage({names}: Props) {
     const history = useHistory();
     const [filesToUpload, setFilesToUpload] = useState(names || []);
+    const [loading, setLoading] = useState(false);
   
     const handleFilesChange = (files: any[]) => {
       // Update chosen files
       setFilesToUpload([...files]);
     };
+
+    if (loading) return <LoadingComponent message='Uploading questions...' />
   
     const uploadFiles = async () => {
       // Create a form and post it to server
       let formData = new FormData();
       filesToUpload.forEach((file) => formData.append("files", file));
 
-        // const uploadDto = agent.File.upload(formData);
-        // if (uploadDto.Status) { 
-        //     toast.success("File successfully uploaded!");
-        // }
-
-        await agent.File.upload(formData)
+      setLoading(true);
+      await agent.File.upload(formData)
         .then(() => {
-            toast.success('File was uploaded successfully');
+            toast.success('File uploaded successfully!');
             history.push('/quiz');
         })
         .catch(error => handleApiErrors(error))
+        .finally(() => setLoading(false));
     };
     return (
         <>

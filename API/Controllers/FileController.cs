@@ -30,30 +30,6 @@ namespace API.Controllers
 
         }
 
-        //[HttpPost("upload")]
-        //public async Task<IActionResult> OnPostUploadAsync(List<IFormFile> files)
-        //{
-        //    long size = files.Sum(f => f.Length);
-
-        //    foreach (var formFile in files)
-        //    {
-        //        if (formFile.Length > 0)
-        //        {
-        //            var filePath = Path.GetTempFileName();
-
-        //            using (var stream = System.IO.File.Create(filePath))
-        //            {
-        //                await formFile.CopyToAsync(stream);
-        //            }
-        //        }
-        //    }
-
-        // Process uploaded files
-        // Don't rely on or trust the FileName property without validation.
-
-        //return Ok(new { count = files.Count, size });
-
-
         [HttpPost("upload")]
         public async Task<ActionResult<UploadDto>> OnPostUpload(List<IFormFile> files)
         {
@@ -64,12 +40,7 @@ namespace API.Controllers
 
                     var questions = new List<Question>();
 
-                    await GetAllQuestions(files, questions);
-                    //GetAllQuestionsFromExcel(files, questions);
-
-
-                    //await _cosmosContext.Questions?.AddRangeAsync(questions);
-
+                    await UploadAllQuestions(files, questions);
 
                     return new UploadDto
                     {
@@ -84,48 +55,7 @@ namespace API.Controllers
             }
         }
 
-        private void GetAllQuestionsFromExcel(List<IFormFile> files, List<Question> questions)
-        {
-            if (files == null)
-                return;
-
-            foreach (var file in files)
-            {
-                var fileExtension = Path.GetExtension(file.FileName);
-                var filename = Guid.NewGuid().ToString() + fileExtension;
-                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "files", filename);
-                //var filepath = Path.GetTempFileName();
-                using (FileStream fs = System.IO.File.Create(filePath))
-                {
-                    file.CopyTo(fs);
-                }
-                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
-                using var stream = System.IO.File.Open(filePath, FileMode.Open, FileAccess.Read);
-                using var reader = ExcelReaderFactory.CreateReader(stream);
-                do
-                {
-                    while(reader.Read())
-                    {
-                        for (int column = 0; column < reader.FieldCount; column++)
-                        {
-                            Console.WriteLine(reader.GetValue(column));
-                            var question = new Question
-                            {
-                                Id = Guid.NewGuid().ToString(),
-                                QuestionText = reader.GetValue(0).ToString(),
-                                CorrectAnswer = reader.GetValue(5).ToString(),
-                                //Category = reader.HeaderFooter.Worksheet?.ToString()
-                            };
-
-                            questions.Add(question);
-                        }
-                    }
-                } while (reader.NextResult());
-            }
-        }
-
-        private async Task GetAllQuestions(List<IFormFile> files, List<Question> questions)
+        private async Task UploadAllQuestions(List<IFormFile> files, List<Question> questions)
         {
             foreach (var file in files)
             {
@@ -137,8 +67,6 @@ namespace API.Controllers
                     file.CopyTo(fs);
                 }
                 XLWorkbook workbook = XLWorkbook.OpenFromTemplate(filepath);
-                //var sheets = workbook.Worksheets;
-                //var rows = sheets.Rows().ToList();
 
                 foreach (var sheet in workbook.Worksheets)
                 {
